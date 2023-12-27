@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 @Entity
 
 //lambbok will manage the all of our constructors
-@Data
+
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
