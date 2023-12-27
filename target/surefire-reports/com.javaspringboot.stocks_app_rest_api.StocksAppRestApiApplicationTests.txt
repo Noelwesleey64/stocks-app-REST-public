@@ -1,4 +1,4 @@
 -------------------------------------------------------------------------------
 Test set: com.javaspringboot.stocks_app_rest_api.StocksAppRestApiApplicationTests
 -------------------------------------------------------------------------------
-Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 7.639 s -- in com.javaspringboot.stocks_app_rest_api.StocksAppRestApiApplicationTests
+Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 28.47 s -- in com.javaspringboot.stocks_app_rest_api.StocksAppRestApiApplicationTests
