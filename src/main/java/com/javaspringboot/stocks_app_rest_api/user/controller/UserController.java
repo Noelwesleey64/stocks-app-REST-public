@@ -27,6 +27,11 @@ public class UserController {
 
     }
 
+    @GetMapping("/damn")
+    public String damn(){
+        return  "Lefuck you 3";
+    }
+
     @PostMapping("/login")
     //ResponseEntity class is used to represent the entire HTTP response, including the status code, headers, and body.
     //The ? in ResponseEntity<?> is a wildcard that represents an unknown type
