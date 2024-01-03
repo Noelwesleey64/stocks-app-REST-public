@@ -1,12 +1,8 @@
 package com.javaspringboot.stocks_app_rest_api.user.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 //Adding annotations to the class
@@ -14,8 +10,11 @@ import java.time.LocalDateTime;
 
 //lambbok will manage the all of our constructors
 
+@Getter
+@Setter
 @Builder
 @AllArgsConstructor
+@Data
 @NoArgsConstructor
 @Table(
         //name of the table
@@ -42,7 +41,7 @@ import java.time.LocalDateTime;
 )
 
 
-public class User {
+public class UserTbl {
 
     //Creating  a generator to generate Unique Id starting from 1
     @Id
@@ -62,91 +61,14 @@ public class User {
     private Long userId;
 
 
+
     @Column(name = "user_name", length = 255, nullable = false)
     private String userName;
+
 
     @Column(name = "first_name", length = 255)
     private String firstName;
 
-    public Long getUserId() {
-        return userId;
-    }
-
-    public void setUserId(Long userId) {
-        this.userId = userId;
-    }
-
-    public String getUserName() {
-        return userName;
-    }
-
-    public void setUserName(String userName) {
-        this.userName = userName;
-    }
-
-    public String getFirstName() {
-        return firstName;
-    }
-
-    public void setFirstName(String firstName) {
-        this.firstName = firstName;
-    }
-
-    public String getLastName() {
-        return lastName;
-    }
-
-    public void setLastName(String lastName) {
-        this.lastName = lastName;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public String getPhoneNo() {
-        return phoneNo;
-    }
-
-    public void setPhoneNo(String phoneNo) {
-        this.phoneNo = phoneNo;
-    }
-
-    public String getGender() {
-        return gender;
-    }
-
-    public void setGender(String gender) {
-        this.gender = gender;
-    }
-
-    public String getImagePath() {
-        return imagePath;
-    }
-
-    public void setImagePath(String imagePath) {
-        this.imagePath = imagePath;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-    public LocalDateTime getCreatedTime() {
-        return createdTime;
-    }
-
-    public void setCreatedTime(LocalDateTime createdTime) {
-        this.createdTime = createdTime;
-    }
 
     @Column(name = "last_name", length = 255)
     private String lastName;
@@ -158,9 +80,11 @@ public class User {
     @Column(name = "phone_no")
     private String phoneNo;
 
+    @Setter
     @Column(name = "gender")
     private String gender;
 
+    @Setter
     @Column(name = "image_url")
     private String imagePath;
 
@@ -169,6 +93,12 @@ public class User {
 
     @Column(name = "created_time")
     private LocalDateTime createdTime;
+
+    @Column(name = "is_enabled")
+    private boolean isEnabled = false;
+
+    @Column(name = "role")
+    private String role;
 
 
 }

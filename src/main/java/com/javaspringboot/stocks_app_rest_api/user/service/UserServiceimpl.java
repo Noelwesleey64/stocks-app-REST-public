@@ -2,13 +2,18 @@ package com.javaspringboot.stocks_app_rest_api.user.service;
 
 import com.javaspringboot.stocks_app_rest_api.user.dto.LoginDTO;
 import com.javaspringboot.stocks_app_rest_api.user.dto.UserDTo;
-import com.javaspringboot.stocks_app_rest_api.user.entity.User;
+import com.javaspringboot.stocks_app_rest_api.user.entity.UserTbl;
+import com.javaspringboot.stocks_app_rest_api.user.repository.ConfirmationTokenRepository;
 import com.javaspringboot.stocks_app_rest_api.user.repository.UserRepository;
 import com.javaspringboot.stocks_app_rest_api.user.responsepayload.LoginResponse;
+import com.javaspringboot.stocks_app_rest_api.user.responsepayload.RegisterResponse;
+import com.javaspringboot.stocks_app_rest_api.user.token.ConfirmationToken;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.Calendar;
+import java.util.List;
 import java.util.Optional;
 
 //Implementing the user service interface methods
@@ -24,41 +29,47 @@ public class UserServiceimpl implements UserService{
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    //Dependency Inject ConfirmationTokenRepository instance
+    @Autowired
+    private ConfirmationTokenRepository tokenRepository;
+
 
 
     //Mapping the UserDTO object we receive form the POST request to our User entity object
     //So that we can save the user to database
     @Override
-    public String addUser(UserDTo userDTo) {
+    public RegisterResponse addUser(UserDTo userDTo) {
 
         //Instantiate user object to store userDTo data passed from post request
-        User user = new User();
+        UserTbl userTbl = new UserTbl();
+
+        RegisterResponse registerResponse = new RegisterResponse();
 
         //map dto received to user entity
-        user.setUserName(userDTo.getUserName());
-        user.setFirstName(userDTo.getFirstName());
-        user.setLastName(userDTo.getLastName());
-        user.setEmail(userDTo.getEmail());
-        user.setCreatedTime(userDTo.getCreatedTime());
-        user.setPhoneNo(userDTo.getPhoneNo());
-        user.setPassword(passwordEncoder.encode(userDTo.getPassword()));
+        userTbl.setUserName(userDTo.getUserName());
+        userTbl.setFirstName(userDTo.getFirstName());
+        userTbl.setLastName(userDTo.getLastName());
+        userTbl.setEmail(userDTo.getEmail());
+        userTbl.setCreatedTime(userDTo.getCreatedTime());
+        userTbl.setPhoneNo(userDTo.getPhoneNo());
+        userTbl.setPassword(passwordEncoder.encode(userDTo.getPassword()));
 
         //Checking if user already exists
         //Check if a user with the username exists
-        User userValid = userRepository.findByUserName(user.getUserName());
+        UserTbl userTblValid = userRepository.findByUserName(userTbl.getUserName());
 
         //Check if the user with the email exist
-        User userValid2 = userRepository.findByEmail(user.getEmail());
+        Optional<UserTbl> userTblValid2 = userRepository.findByEmail(userTbl.getEmail());
 
-        if(userValid != null || userValid2 != null){
-            return "User Already Exists";
+        if(userTblValid != null ||userTblValid2.isPresent()){
+            return new RegisterResponse("User Already Exists", false,"");
 
         }else{
             //save the mapped user from dto to database
-            userRepository.save(user);
+            userRepository.save(userTbl);
 
             //return username of user after saving
-            return user.getUserName();
+            return new RegisterResponse("User Created Successfully, Check email for verification", true, userTbl.getUserName());
         }
 
 
@@ -74,28 +85,28 @@ public class UserServiceimpl implements UserService{
         String msg = "";
 
         //find user based on email
-        User user = userRepository.findByEmail(loginDTO.getUserNameOrEmail());
+       Optional<UserTbl> userTbl = userRepository.findByEmail(loginDTO.getUserNameOrEmail());
 
         //return user based on username
-        User user2 = userRepository.findByUserName(loginDTO.getUserNameOrEmail());
+        UserTbl userTbl2 = userRepository.findByUserName(loginDTO.getUserNameOrEmail());
 
         //Check for user using email and password
 
         //If the email exists in the database
-        if(user != null){
+        if(userTbl.isPresent()){
 
             //get the password passed form loginDTO
             String password = loginDTO.getPassword();
 
             //Get the encoded password of the user found from database
-            String encodedPassword = user.getPassword();
+            String encodedPassword = userTbl.get().getPassword();
 
             //check if password from the request body matches the one in the database
             Boolean isPwdRight = passwordEncoder.matches(password, encodedPassword);
 
             //If the password matches the one in database, then check if the password and email in database for user exist
             if(isPwdRight){
-                Optional<User> emailPasswordUser = userRepository.findByEmailAndPassword(loginDTO.getUserNameOrEmail(), encodedPassword);
+                Optional<UserTbl> emailPasswordUser = userRepository.findByEmailAndPassword(loginDTO.getUserNameOrEmail(), encodedPassword);
 
                 //If password and email are in database then login success
                 if(emailPasswordUser.isPresent()){
@@ -115,12 +126,12 @@ public class UserServiceimpl implements UserService{
             //Login using username and password
 
             //Check if there is a user with the username given
-        }else if(user2 != null){
+        }else if(userTbl2 != null){
             //Get the password from the Post request body
             String password = loginDTO.getPassword();
 
             //Get the encoded password of the user from the database
-            String encodedPassword = user2.getPassword();
+            String encodedPassword = userTbl2.getPassword();
 
             //Check if the password matches the one in the datatbase
             Boolean isPwdRight = passwordEncoder.matches(password, encodedPassword);
@@ -129,7 +140,7 @@ public class UserServiceimpl implements UserService{
             if(isPwdRight){
 
                 //Then check if there is a user with the username and encodedpassword existing
-                Optional<User> UserNamePasswordUser = userRepository.findByUserNameAndPassword(loginDTO.getUserNameOrEmail(), encodedPassword);
+                Optional<UserTbl> UserNamePasswordUser = userRepository.findByUserNameAndPassword(loginDTO.getUserNameOrEmail(), encodedPassword);
 
                 //If user exists then login
                 if(UserNamePasswordUser.isPresent()){
@@ -150,6 +161,67 @@ public class UserServiceimpl implements UserService{
         }else{
             return new LoginResponse("Email or Username does not exist", false);
         }
+    }
+
+    @Override
+    public List<UserTbl> getUsers() {
+        userRepository.findAll();
+        return null;
+    }
+
+    @Override
+    public UserTbl getUser(String username) {
+
+        //return the user found by username passed
+       return userRepository.findByUserName(username);
+
+    }
+
+    @Override
+    public void saveUserVerificationToken(UserTbl user, String verificationToken) {
+        //Creating a confirmation token object and passing user and the verification token
+        ConfirmationToken confirmationToken = new ConfirmationToken(verificationToken, user);
+
+        //Saving verification token for the user
+        tokenRepository.save(confirmationToken);
+
+
+
+
+    }
+
+    @Override
+    public String validateToken(String verifyToken) {
+        //finding a token object using the methodFindByToken, which returns a token object if the token passed from the get request exists
+        ConfirmationToken token = tokenRepository.findByToken(verifyToken);
+
+        //If no token object with the token passed is available in the database then execute statement
+        if(token == null){
+            return "Token is invalid or expired";
+        }
+
+        UserTbl user = token.getUser();
+
+        //Get an instance if calendar
+        Calendar calendar = Calendar.getInstance();
+
+        //If the token expiration time has passed, then execute the statement
+        if(token.getTokenExpirationTime().getTime() < calendar.getTime().getTime()){
+
+
+            //delete token if expiration has passed
+            tokenRepository.delete(token);
+
+            return "Token already expired";
+        }
+
+        //If the token is available and has not expired then set isEnabled to true
+        user.setEnabled(true);
+
+        //Save user to database with the isEnabled property being true
+        userRepository.save(user);
+
+        return "user successfully verified";
     }
 
 }
