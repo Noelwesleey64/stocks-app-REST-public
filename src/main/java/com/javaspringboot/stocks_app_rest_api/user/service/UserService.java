@@ -25,4 +25,6 @@ public interface UserService {
     void saveUserVerificationToken(UserTbl user, String verificationToken);
 
     String validateToken(String verifyToken);
+
+    ConfirmationToken generateNewVerificationToken(String oldToken);
 }

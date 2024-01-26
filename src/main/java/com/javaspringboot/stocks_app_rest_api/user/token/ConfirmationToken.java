@@ -24,7 +24,7 @@ public class ConfirmationToken {
 
     private Date expirationTime;
 
-    private static final int EXPIRATION_TIME =15;
+    private static final int EXPIRATION_TIME =1;
 
     //The @OneToOne annotation specifies that this is a one-to-one relationship,
     @OneToOne

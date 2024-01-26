@@ -10,6 +10,8 @@ import com.javaspringboot.stocks_app_rest_api.user.token.ConfirmationToken;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import java.util.Calendar;
+import java.util.Date;
 
 @SpringBootTest
 class UserTblServiceimplTest {
@@ -46,6 +48,29 @@ class UserTblServiceimplTest {
         confirmationTokenRepository.delete(confirmationToken);
         userRepository.delete(userTbl);
     }
+
+    @Test
+    public void calenderTime(){
+
+        ConfirmationToken token = confirmationTokenRepository.findByToken("846fc9a0-a08a-484f-a1a0-b53dea42f8ba");
+
+        Calendar calendar = Calendar.getInstance();
+        //sets the calendar’s time value to the current system time in milliseconds.
+
+
+        System.out.println("Curremt time is" + calendar.getTime().getTime());
+        System.out.println("Current Token Expiration Time is" + token.getExpirationTime().getTime());
+
+
+    }
+
+    @Test
+    public void getTokenExpirationTime(){
+        ConfirmationToken token = confirmationTokenRepository.findByToken("846fc9a0-a08a-484f-a1a0-b53dea42f8ba");
+
+
+    }
+
 
 
     @Test

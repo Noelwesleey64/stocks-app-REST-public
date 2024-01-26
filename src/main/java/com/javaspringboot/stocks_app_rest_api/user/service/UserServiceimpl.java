@@ -12,9 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.Calendar;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 //Implementing the user service interface methods
 @Service
@@ -32,6 +30,8 @@ public class UserServiceimpl implements UserService{
     //Dependency Inject ConfirmationTokenRepository instance
     @Autowired
     private ConfirmationTokenRepository tokenRepository;
+
+
 
 
 
@@ -95,6 +95,8 @@ public class UserServiceimpl implements UserService{
         //If the email exists in the database
         if(userTbl.isPresent()){
 
+            Boolean enabled = userTbl.get().isEnabled();
+
             //get the password passed form loginDTO
             String password = loginDTO.getPassword();
 
@@ -108,15 +110,21 @@ public class UserServiceimpl implements UserService{
             if(isPwdRight){
                 Optional<UserTbl> emailPasswordUser = userRepository.findByEmailAndPassword(loginDTO.getUserNameOrEmail(), encodedPassword);
 
-                //If password and email are in database then login success
+                //If password and email are in database and the user is enabled then login success
                 if(emailPasswordUser.isPresent()){
-                    return new LoginResponse("Login Success", true);
+                    //If user is enabled return a login response object with message below, else return the else statement
+                    if(enabled){
+                        return new LoginResponse("Login Success", true);
+                    } else {
+                        return new LoginResponse("Verify Email to login", false);
+                    }
+
 
                 }else{
                     //login failed
-                    return new LoginResponse("Login Failed", false);
+                    return new LoginResponse("Verify Email to login", false);
                 }
-             //If password is not right  then Incorrec Password or email
+             //If password is not right  then Incorrect Password or email
 
             }else {
                 return new LoginResponse("Incorrect Password or email", false);
@@ -129,6 +137,8 @@ public class UserServiceimpl implements UserService{
         }else if(userTbl2 != null){
             //Get the password from the Post request body
             String password = loginDTO.getPassword();
+
+            Boolean enabled = userTbl2.isEnabled();
 
             //Get the encoded password of the user from the database
             String encodedPassword = userTbl2.getPassword();
@@ -144,7 +154,12 @@ public class UserServiceimpl implements UserService{
 
                 //If user exists then login
                 if(UserNamePasswordUser.isPresent()){
-                    return new LoginResponse("Login Success", true);
+                    //If user is enabled return a login response object with message below, else return the else statement
+                    if(enabled){
+                        return new LoginResponse("Login Success", true);
+                    } else {
+                        return new LoginResponse("Verify Email to login", false);
+                    }
 
                     //if password is not correct, or doesn't match with the one in the database then login failed
                 }else{
@@ -195,22 +210,14 @@ public class UserServiceimpl implements UserService{
         //finding a token object using the methodFindByToken, which returns a token object if the token passed from the get request exists
         ConfirmationToken token = tokenRepository.findByToken(verifyToken);
 
-        //If no token object with the token passed is available in the database then execute statement
-        if(token == null){
-            return "Token is invalid or expired";
-        }
-
         UserTbl user = token.getUser();
 
-        //Get an instance if calendar
         Calendar calendar = Calendar.getInstance();
+        //sets the calendar’s time value to the current system time in milliseconds.
+
 
         //If the token expiration time has passed, then execute the statement
-        if(token.getTokenExpirationTime().getTime() < calendar.getTime().getTime()){
-
-
-            //delete token if expiration has passed
-            tokenRepository.delete(token);
+        if(token.getExpirationTime().getTime() < calendar.getTime().getTime()){
 
             return "Token already expired";
         }
@@ -221,7 +228,26 @@ public class UserServiceimpl implements UserService{
         //Save user to database with the isEnabled property being true
         userRepository.save(user);
 
-        return "user successfully verified";
+        return "valid";
+    }
+
+    //method to generate a new confirmation token
+    @Override
+    public ConfirmationToken generateNewVerificationToken(String oldToken) {
+
+        //Get a token object whose token matches the old expired token passed to the method
+        ConfirmationToken confirmationToken = tokenRepository.findByToken(oldToken);
+
+        //Create a new Confirmation token object so that we can access the time the token needs to expire
+        ConfirmationToken confirmationTokenTime = new ConfirmationToken();
+
+        //Generate a new token and set it to the confirmation token object found from the database
+        confirmationToken.setToken(UUID.randomUUID().toString());
+
+        //Set expiration time to the confirmationTokenTime getTokenExpirationTime which returns the expiration time for the token
+        confirmationToken.setExpirationTime(confirmationTokenTime.getTokenExpirationTime());
+
+        return tokenRepository.save(confirmationToken);
     }
 
 }

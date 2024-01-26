@@ -4,20 +4,25 @@ import com.javaspringboot.stocks_app_rest_api.user.dto.LoginDTO;
 import com.javaspringboot.stocks_app_rest_api.user.dto.UserDTo;
 import com.javaspringboot.stocks_app_rest_api.user.entity.UserTbl;
 import com.javaspringboot.stocks_app_rest_api.user.event.RegistrationCompleteEvent;
+import com.javaspringboot.stocks_app_rest_api.user.event.listener.RegistrationCompleteEventListener;
 import com.javaspringboot.stocks_app_rest_api.user.repository.ConfirmationTokenRepository;
 import com.javaspringboot.stocks_app_rest_api.user.responsepayload.LoginResponse;
 import com.javaspringboot.stocks_app_rest_api.user.responsepayload.RegisterResponse;
 import com.javaspringboot.stocks_app_rest_api.user.service.UserService;
 import com.javaspringboot.stocks_app_rest_api.user.token.ConfirmationToken;
+import jakarta.mail.MessagingException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.apache.catalina.UserDatabase;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import lombok.extern.slf4j.Slf4j;
 
+import java.io.UnsupportedEncodingException;
 import java.util.Optional;
 
+@Slf4j
 //Rest Controller for our login
 @RestController
 @CrossOrigin
@@ -35,6 +40,12 @@ public class UserController {
     //Inject confirmationTokenRepository
     @Autowired
     private ConfirmationTokenRepository confirmationTokenRepository;
+
+    @Autowired
+    private RegistrationCompleteEventListener eventListener;
+
+    @Autowired
+    private HttpServletRequest servletRequest;
 
     //Post mapping to save user
     @PostMapping(value = "/register")
@@ -65,6 +76,10 @@ public class UserController {
     //The GET request will have a token value attached to it
     public String verifyEmail(@RequestParam("token") String token){
 
+
+        //Create a string variable to hold the link that we will resend when the token expires
+        String url = applicationUrl(servletRequest) + "/register/resend-verification-token?token=" + token;
+
          //Return ConfirmationToken object if the token is available in the database
         ConfirmationToken verifyToken = confirmationTokenRepository.findByToken(token);
 
@@ -77,7 +92,15 @@ public class UserController {
 
        //if the above  IfStatement is not valid, the validate if the token has expired or not using userService.validateToken method
        //and set the isEnabled property of a user to true if token hasn't expired
-        return userService.validateToken(token);
+        String verificationResult = userService.validateToken(token);
+
+        if(verificationResult.equalsIgnoreCase("valid")){
+            return "Email has been succesfully verified";
+
+        }
+
+        //Show a link to resend email
+        return "Invalid verification link, <a href=\"" + url +"\"> Get a new verification link. </a>";
 
     }
 
@@ -102,6 +125,37 @@ public class UserController {
         // getServerPort() returns the port number on which the request was received.
         //getContextPath() returns the part of the request URI that indicates the context of the request
         return  "http://" + request.getServerName()+":"+request.getServerPort()+request.getContextPath();
+    }
+
+    ////The GET request will have a token value attached to it
+    @GetMapping("/register/resend-verification-token")
+    public String resendVerififcationCode(@RequestParam("token") String oldToken, @Autowired HttpServletRequest request) throws MessagingException, UnsupportedEncodingException {
+
+            //Generate a new confirmation token object from and store it in the database
+            ConfirmationToken confirmationToken = userService.generateNewVerificationToken(oldToken);
+            //Get user with the confirmation token object gotten from the database below
+            UserTbl user = confirmationToken.getUser();
+
+            //Method to resend cerification email
+            resendVerificationTokenEmail(user, applicationUrl(request), confirmationToken);
+
+            return "A new Verification link has been sent to your email";
+
+    }
+
+    //Method to resend verification token
+    private void resendVerificationTokenEmail(UserTbl user,
+                                              String applicationUrl,
+                                              ConfirmationToken confirmationToken) throws MessagingException, UnsupportedEncodingException {
+
+        //Build the verification url to be sent to the user
+        String url = applicationUrl+"/register/verifyEmail?token=" + confirmationToken.getToken().toString();
+
+        //Call the method used to send email from the RegistrationCompleteEventListenerObject
+        eventListener.sendVerificationEmail(url, user);
+
+        //Show our url created in the log
+        log.info("Click the link to verify your registration: {}", url);
     }
 
 }

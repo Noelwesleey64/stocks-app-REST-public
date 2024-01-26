@@ -46,6 +46,8 @@ public class RegistrationCompleteEventListener implements ApplicationListener<Re
         // which generates a random and unique identifier and returns its string representation.
         String verificationToken = UUID.randomUUID().toString();
 
+        //Creating
+
 
         //3. save the verification token for the user
         userService.saveUserVerificationToken(user, verificationToken);
@@ -121,7 +123,6 @@ public class RegistrationCompleteEventListener implements ApplicationListener<Re
         messageHelper.setSubject(subject);
         messageHelper.setText(content, true);
         javaMailSender.send(message);
-
 
 
     }
