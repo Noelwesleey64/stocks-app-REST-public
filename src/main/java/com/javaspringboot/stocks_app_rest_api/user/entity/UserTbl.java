@@ -2,6 +2,7 @@ package com.javaspringboot.stocks_app_rest_api.user.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.http.MediaType;
 
 import java.time.LocalDateTime;
 
@@ -87,6 +88,12 @@ public class UserTbl {
     @Setter
     @Column(name = "image_url")
     private String imagePath;
+
+    @Column
+    private String imageName;
+
+    @Column
+    private String imageType;
 
     @Column(name = "password" )
     private String password;

@@ -6,20 +6,28 @@ import com.javaspringboot.stocks_app_rest_api.user.entity.UserTbl;
 import com.javaspringboot.stocks_app_rest_api.user.event.RegistrationCompleteEvent;
 import com.javaspringboot.stocks_app_rest_api.user.event.listener.RegistrationCompleteEventListener;
 import com.javaspringboot.stocks_app_rest_api.user.repository.ConfirmationTokenRepository;
+import com.javaspringboot.stocks_app_rest_api.user.requestBody.ProfileUploadRequest;
 import com.javaspringboot.stocks_app_rest_api.user.responsepayload.LoginResponse;
+import com.javaspringboot.stocks_app_rest_api.user.responsepayload.ProfileUploadResponse;
 import com.javaspringboot.stocks_app_rest_api.user.responsepayload.RegisterResponse;
 import com.javaspringboot.stocks_app_rest_api.user.service.UserService;
 import com.javaspringboot.stocks_app_rest_api.user.token.ConfirmationToken;
+import com.javaspringboot.stocks_app_rest_api.user.utility_objects.ImageProfile;
 import jakarta.mail.MessagingException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.apache.catalina.UserDatabase;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.util.Base64;
 import java.util.Optional;
 
 @Slf4j
@@ -143,6 +151,48 @@ public class UserController {
 
     }
 
+    @GetMapping("/user/getUser/{username}")
+    public UserTbl getUser(@PathVariable String username){
+        UserTbl user = userService.getUser(username);
+
+        return user;
+
+    }
+
+    //Annotate the method with @PostMapping to map it to the /user/profileUpload/{userName} URL, where {userName} is a path variable
+    //the Post method returns a ProfileUploadResponse and takes a MultiPartFile
+    @PostMapping("/user/profileUpload/{userName}")
+    public ProfileUploadResponse profileUpload(@RequestParam MultipartFile file, @PathVariable String userName) throws IOException {
+
+        //Call the uploadProfile method from the userService object, passing the file and userName parameters, and assign the returned value to uploadImage
+         ProfileUploadResponse uploadImage = userService.uploadProfile(file, userName);
+
+        //Return the uploadImage object as the response body
+         return uploadImage;
+
+    }
+
+    //Annotate the method with @GetMapping to map it to the /user/getProfile/{userName} URL, where {userName} is a path variable
+    @GetMapping(value = "/user/getProfile")
+    public ResponseEntity<?> getProfileImage() throws IOException {
+
+        //Call the getProfileImage method from the userService object, passing the userName parameter, and assign the returned value to image
+        ImageProfile image = userService.getProfileImage("noelwesley64@gmail.com");
+        String imageString = Base64.getEncoder().encodeToString(image.getImage());
+
+        //Create a new ResponseEntity object with the status code of OK (200), the content type of the image, and the image data as the body
+        return ResponseEntity.status(HttpStatus.OK).contentType(MediaType.valueOf(image.getImageType())).body(image.getImage());
+
+    }
+
+    @GetMapping("/user/getHello/{username}")
+    public ResponseEntity<?> getHello(@PathVariable String username) throws IOException {
+
+        return ResponseEntity.status(HttpStatus.OK).body(username + "Hello Noelski");
+
+    }
+
+
     //Method to resend verification token
     private void resendVerificationTokenEmail(UserTbl user,
                                               String applicationUrl,
@@ -157,6 +207,9 @@ public class UserController {
         //Show our url created in the log
         log.info("Click the link to verify your registration: {}", url);
     }
+
+
+
 
 }
 

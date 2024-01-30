@@ -5,13 +5,21 @@ import com.javaspringboot.stocks_app_rest_api.user.dto.UserDTo;
 import com.javaspringboot.stocks_app_rest_api.user.entity.UserTbl;
 import com.javaspringboot.stocks_app_rest_api.user.repository.ConfirmationTokenRepository;
 import com.javaspringboot.stocks_app_rest_api.user.repository.UserRepository;
+import com.javaspringboot.stocks_app_rest_api.user.requestBody.ProfileUploadRequest;
 import com.javaspringboot.stocks_app_rest_api.user.responsepayload.LoginResponse;
+import com.javaspringboot.stocks_app_rest_api.user.responsepayload.ProfileUploadResponse;
 import com.javaspringboot.stocks_app_rest_api.user.responsepayload.RegisterResponse;
 import com.javaspringboot.stocks_app_rest_api.user.token.ConfirmationToken;
+import com.javaspringboot.stocks_app_rest_api.user.utility_objects.ImageProfile;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.util.*;
 
 //Implementing the user service interface methods
@@ -30,6 +38,8 @@ public class UserServiceimpl implements UserService{
     //Dependency Inject ConfirmationTokenRepository instance
     @Autowired
     private ConfirmationTokenRepository tokenRepository;
+
+    private final String FOLDER_PATH = "D:\\JavaSpringboot\\Stocks App REST API\\FileStorage\\ProfileImages\\";
 
 
 
@@ -231,6 +241,43 @@ public class UserServiceimpl implements UserService{
         return "valid";
     }
 
+    //Override the uploadProfile method from the UserService interface
+    @Override
+    public ProfileUploadResponse uploadProfile(MultipartFile file, String userName) throws IOException {
+
+        //Set the filepath of the image to the Folder_path specified and the file name
+        String filePath = FOLDER_PATH + file.getOriginalFilename();
+
+        //Find the user object from the userRepository by the userName parameter
+        UserTbl user = userRepository.findByUserName(userName);
+
+        //Set the imagePath, imageName, and imageType properties of the user object to the corresponding values from the file parameter
+        user.setImagePath(filePath);
+        user.setImageName(file.getOriginalFilename());
+        user.setImageType(file.getContentType());
+
+        //Transfer the file to the destination specified by the filePath
+        file.transferTo(new File(filePath));
+
+        //Save the updated user object to the userRepository and assign the returned value to user2
+        UserTbl user2 = userRepository.save(user);
+
+        //Check if user2 is not null, meaning the save operation was successful
+        if(user2 != null){
+
+            //Create a new ProfileUploadResponse object with a success message and a true value
+            ProfileUploadResponse profileUploadResponse = new ProfileUploadResponse("Image Uploaded Successfully" + filePath, true);
+
+            //Return the profileUploadResponse object
+            return profileUploadResponse;
+        }
+
+        //If user2 is null, return null
+       return null;
+
+
+    }
+
     //method to generate a new confirmation token
     @Override
     public ConfirmationToken generateNewVerificationToken(String oldToken) {
@@ -248,6 +295,25 @@ public class UserServiceimpl implements UserService{
         confirmationToken.setExpirationTime(confirmationTokenTime.getTokenExpirationTime());
 
         return tokenRepository.save(confirmationToken);
+    }
+
+    //Override the getProfileImage method from the interface or superclass
+    @Override
+    public ImageProfile getProfileImage(String userName) throws IOException {
+        //Find the user object from the userRepository by the userName parameter
+        UserTbl user = userRepository.findByUserNameOrEmail(userName, userName);
+
+        //Get the filePath value from the user object, which is the location of the image file
+        String filePath = user.getImagePath();
+
+        //Get the imageType value from the user object, which is the content type of the image file
+        String imageType = user.getImageType();
+
+        //Read all the bytes from the image file specified by the filePath and store them in an array
+        byte[] image = Files.readAllBytes(new File(filePath).toPath());
+
+        //Create a new ImageProfile object with the image and imageType values and return it
+        return new ImageProfile(image, imageType);
     }
 
 }

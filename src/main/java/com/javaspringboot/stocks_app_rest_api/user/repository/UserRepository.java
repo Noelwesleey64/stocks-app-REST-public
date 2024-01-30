@@ -22,6 +22,8 @@ public interface UserRepository extends JpaRepository<UserTbl, Long> {
     //Query method to find user by email and password
     Optional<UserTbl> findByEmailAndPassword(String email, String password);
 
+    UserTbl findByUserNameOrEmail(String username, String email);
+
 
     //Query method to find user by username and password
     Optional<UserTbl> findByUserNameAndPassword(String userName, String password);
