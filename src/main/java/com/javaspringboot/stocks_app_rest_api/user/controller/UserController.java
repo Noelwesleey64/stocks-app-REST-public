@@ -173,11 +173,11 @@ public class UserController {
     }
 
     //Annotate the method with @GetMapping to map it to the /user/getProfile/{userName} URL, where {userName} is a path variable
-    @GetMapping(value = "/user/getProfile")
-    public ResponseEntity<?> getProfileImage() throws IOException {
+    @GetMapping(value = "user/getProfile/{userName}")
+    public ResponseEntity<?> getProfileImage( @PathVariable String userName) throws IOException {
 
         //Call the getProfileImage method from the userService object, passing the userName parameter, and assign the returned value to image
-        ImageProfile image = userService.getProfileImage("noelwesley64@gmail.com");
+        ImageProfile image = userService.getProfileImage(userName);
         String imageString = Base64.getEncoder().encodeToString(image.getImage());
 
         //Create a new ResponseEntity object with the status code of OK (200), the content type of the image, and the image data as the body
