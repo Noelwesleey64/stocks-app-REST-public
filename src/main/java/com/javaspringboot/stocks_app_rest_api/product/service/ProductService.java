@@ -13,4 +13,14 @@ public interface ProductService {
 
     //declaring method to be implemented that gets all products from database and returns a string
     List<Product> getAllProduct();
+
+    //declaring method to be implemented for getting a list of products based on their categories
+    List<Product> getProductOnCategory(Long categoryId);
+
+    Product getProduct(Long productId);
+
+
+
+
+
 }

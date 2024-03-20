@@ -1,11 +1,15 @@
 package com.javaspringboot.stocks_app_rest_api.user.controller;
 
+import com.javaspringboot.stocks_app_rest_api.category.entity.Category;
+import com.javaspringboot.stocks_app_rest_api.image.repository.ImageRepository;
+import com.javaspringboot.stocks_app_rest_api.product.repository.ProductRepository;
 import com.javaspringboot.stocks_app_rest_api.user.dto.LoginDTO;
 import com.javaspringboot.stocks_app_rest_api.user.dto.UserDTo;
 import com.javaspringboot.stocks_app_rest_api.user.entity.UserTbl;
 import com.javaspringboot.stocks_app_rest_api.user.event.RegistrationCompleteEvent;
 import com.javaspringboot.stocks_app_rest_api.user.event.listener.RegistrationCompleteEventListener;
 import com.javaspringboot.stocks_app_rest_api.user.repository.ConfirmationTokenRepository;
+import com.javaspringboot.stocks_app_rest_api.user.repository.UserRepository;
 import com.javaspringboot.stocks_app_rest_api.user.requestBody.ProfileUploadRequest;
 import com.javaspringboot.stocks_app_rest_api.user.responsepayload.LoginResponse;
 import com.javaspringboot.stocks_app_rest_api.user.responsepayload.ProfileUploadResponse;
@@ -15,6 +19,7 @@ import com.javaspringboot.stocks_app_rest_api.user.token.ConfirmationToken;
 import com.javaspringboot.stocks_app_rest_api.user.utility_objects.ImageProfile;
 import jakarta.mail.MessagingException;
 import jakarta.servlet.http.HttpServletRequest;
+import org.antlr.v4.runtime.Token;
 import org.apache.catalina.UserDatabase;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
@@ -50,10 +55,19 @@ public class UserController {
     private ConfirmationTokenRepository confirmationTokenRepository;
 
     @Autowired
+    private ProductRepository productRepository;
+
+    @Autowired
     private RegistrationCompleteEventListener eventListener;
 
     @Autowired
     private HttpServletRequest servletRequest;
+
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private ImageRepository imageRepository;
 
     //Post mapping to save user
     @PostMapping(value = "/register")

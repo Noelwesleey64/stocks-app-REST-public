@@ -36,7 +36,7 @@ public class ImageServiceImpl implements ImageService{
 
 
         //Create a imageUrl based on the Get Request url that displays the image
-        String imageUrl = "http://localhost:8080/product/image1Download/"+ file.getOriginalFilename();
+        String imageUrl = "/product/image1Download/"+ file.getOriginalFilename();
 
         //Find a product with the product id passed to the method
         Product product = productRepository.findByProductId(productId);
@@ -103,7 +103,7 @@ public class ImageServiceImpl implements ImageService{
 
 
         //Create a imageUrl based on the Get Request url that displays the image
-        String imageUrl = "http://localhost:8080/product/image1Download/"+ file.getOriginalFilename();
+        String imageUrl = "/product/image2Download/"+ file.getOriginalFilename();
 
         //Find a product with the product id passed to the method
         Product product = productRepository.findByProductId(productId);
@@ -160,7 +160,7 @@ public class ImageServiceImpl implements ImageService{
 
 
         //Create a imageUrl based on the Get Request url that displays the image
-        String imageUrl = "http://localhost:8080/product/image1Download/"+ file.getOriginalFilename();
+        String imageUrl = "/product/image3Download/"+ file.getOriginalFilename();
 
         //Find a product with the product id passed to the method
         Product product = productRepository.findByProductId(productId);
@@ -250,5 +250,18 @@ public class ImageServiceImpl implements ImageService{
         //Then it returns the image
         byte[] images = Files.readAllBytes(new File(filePath).toPath());
         return images;
+    }
+
+    //Method to get the Image Object that is related to our product
+    @Override
+    public Optional<Image> getProductImage(Long productId) {
+        //Get the product object from database that matches our productID
+        Product product = productRepository.findByProductId(productId);
+
+        //Get the Optional<Image> from database that matches the product
+        Optional<Image> image = imageRepository.findByProduct(product);
+
+        //Return the product
+        return image;
     }
 }

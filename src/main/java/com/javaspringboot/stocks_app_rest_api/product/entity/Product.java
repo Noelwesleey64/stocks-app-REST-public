@@ -39,7 +39,9 @@ public class Product {
     @Column(name = "product_price")
     private Double price;
 
-    @Column(name = "product_description")
+
+    @Lob
+    @Column(name = "product_description", columnDefinition = "TEXT")
     private String description;
 
     @Column(name = "minimum_order")
@@ -68,7 +70,7 @@ public class Product {
     //Creating a many to one relationship with the usertbl
     //Many products can have one category
     @ManyToOne(
-            cascade = CascadeType.ALL
+
     )
 
     //Setting the column to refer to the Category
@@ -77,6 +79,7 @@ public class Product {
             referencedColumnName = "categoryId"
     )
     private Category category;
+
 
 
 

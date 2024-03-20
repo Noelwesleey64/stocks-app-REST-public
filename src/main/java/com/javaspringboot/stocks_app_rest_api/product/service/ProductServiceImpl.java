@@ -50,4 +50,24 @@ public class ProductServiceImpl implements ProductService {
     public List<Product> getAllProduct() {
         return productRepository.findAll();
     }
+
+    //implements getProductOnCategory method of the productService Interface
+    @Override
+    public List<Product> getProductOnCategory(Long categoryId) {
+
+        //Find a category object base on the categoryId passed from the method
+        Category category = categoryRepository.findByCategoryId(categoryId);
+
+        //Return a list of Products that have a relationship with the category found
+        List<Product> product = productRepository.findByCategory(category);
+
+        //Return the list of products
+        return product;
+    }
+
+    @Override
+    public Product getProduct(Long productId) {
+        Product product = productRepository.findByProductId(productId);
+        return product;
+    }
 }

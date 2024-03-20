@@ -33,6 +33,9 @@ public class ProductController {
     private ProductService productService;
 
     @Autowired
+    private  ProductRepository productRepository;
+
+    @Autowired
     private CategoryRepository categoryRepository;
 
 
@@ -65,6 +68,36 @@ public class ProductController {
 
         //Call the getAllProduct method in the productService object in the
         return productService.getAllProduct();
+    }
+
+    @GetMapping(value = "product/getProductsOnCategory/{categoryId}")
+    public List<Product> getProductOnCategory(@PathVariable Long categoryId){
+
+        List<Product> products = productService.getProductOnCategory(categoryId);
+
+        return  products;
+
+    }
+
+    // An annotation that marks this method as a GET endpoint for HTTP requests.
+    @GetMapping(value = "product/getproduct/{productId}")
+    // Defines a public method that returns a Product object.
+    public Product getProduct(@PathVariable Long productId){
+
+        // Calls a service method to retrieve a product by its ID and assigns the result to a variable.
+        Product product = productService.getProduct(productId);
+        // Returns the retrieved product to the client.
+        return product;
+    }
+
+
+    @DeleteMapping("product/deleteAllProducts")
+    public String deleteAllProducts(){
+
+        productRepository.deleteAll();
+
+        return "Products Deleted";
+
     }
 
 

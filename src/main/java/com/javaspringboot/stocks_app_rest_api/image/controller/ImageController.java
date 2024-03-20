@@ -131,6 +131,29 @@ public class ImageController {
 
     }
 
+    //GetMapping to fetch the image object related to our product
+    //It has a path variable which is productId
+    @GetMapping(value = "product/getProductImages/{productId}" )
+    public ResponseEntity<?> getProductImages(@PathVariable Long productId){
+
+        //Returns Optional Image if the image object relating to the product is found
+        Optional<Image> image = imageService.getProductImage(productId);
+
+        //Returns the Image in the body of the response
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(image.get());
+    }
+
+
+    @DeleteMapping("product/deleteAllImages")
+    public String deleteAllProducts(){
+
+        imageRepository.deleteAll();
+
+        return "Products Deleted";
+
+    }
+
 
 
 

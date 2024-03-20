@@ -58,7 +58,7 @@ public class Image {
 
 
     @OneToOne(
-            cascade = CascadeType.ALL
+
     )
 
     @JoinColumn(
